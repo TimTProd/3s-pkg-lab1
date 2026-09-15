@@ -10,6 +10,14 @@
     <main>
         <h1>Цветовые модели</h1>
         <p>Вариант 8: RGB, XYZ, HSV</p>
+        <p>
+            <label for="lighting">Стандарт освещения:</label>
+            <select id="lighting">
+                <option value="D65">D65 — дневной свет</option>
+                <option value="D50">D50 — тёплый дневной свет</option>
+                <option value="E">E — равноэнергетический</option>
+            </select>
+        </p>
         <div id="colorPreview"></div>
         <p>Цвет: <span id="hexValue">#4F86C6</span></p>
         <p id="warning"></p>
@@ -76,6 +84,8 @@
             </fieldset>
         </div>
     </main>
+    <script src="{{ url_for('static', filename='model.js') }}"></script>
+    <script src="{{ url_for('static', filename='view.js') }}"></script>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

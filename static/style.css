@@ -50,4 +50,28 @@ h1 {
 
 .slider {
     width: 100%;
+    appearance: none;
+    height: 14px;
+    border: 1px solid #aaa;
+    cursor: pointer;
+}
+
+.slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 10px;
+    height: 20px;
+    background: white;
+    border: 1px solid black;
+}
+
+.slider::-moz-range-thumb {
+    width: 10px;
+    height: 20px;
+    border-radius: 0;
+    background: white;
+    border: 1px solid black;
+}
+
+.slider::-moz-range-track {
+    background: transparent;
 }

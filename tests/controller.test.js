@@ -72,12 +72,11 @@ test('XYZ coordinates are retained with a clipping warning', () => {
     assert.equal(app.message, '')
 })
 
-test('out of range numbers are bounded and invalid numbers ignored', () => {
+test('out of range and invalid numbers leave the color unchanged', () => {
     let app = setup()
-    app.callbacks[0]('rgb', 'r', 270, 0, 255)
-    assert.equal(app.state.rgb.r, 255)
-    assert.match(app.message, /диапазоном/)
     let hex = app.hex
-    app.callbacks[0]('rgb', 'r', NaN, 0, 255)
-    assert.equal(app.hex, hex)
+    for (let value of [270, -1, NaN, Infinity, 12.5]) {
+        app.callbacks[0]('rgb', 'r', value, 0, 255)
+        assert.equal(app.hex, hex)
+    }
 })

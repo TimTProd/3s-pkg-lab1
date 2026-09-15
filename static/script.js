@@ -26,7 +26,7 @@ function setColor(rgb, source = 'rgb', values = rgb, activeInput = null) {
 }
 
 function changeComponent(model, name, value, min, max, activeInput) {
-    if (!Number.isFinite(value)) return
+    if (!Number.isFinite(value) || value < min || value > max || (model === 'rgb' && !Number.isInteger(value))) return
     let bounded = ColorModel.clamp(value, min, max)
     let values = {...state[model], [name]: bounded}
     message = bounded !== value ? 'Введённое значение ограничено допустимым диапазоном.' : ''

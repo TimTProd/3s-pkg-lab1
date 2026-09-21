@@ -1,7 +1,6 @@
 const ColorView = (() => {
     const rows = Array.from(document.querySelectorAll('.component'))
     const palettes = Array.from(document.querySelectorAll('.palette'))
-    const lighting = document.querySelector('#lighting')
 
     function render(values, hex, message, activeInput = null) {
         rows.forEach(row => {
@@ -23,7 +22,7 @@ const ColorView = (() => {
         rows.forEach((row, i) => row.querySelector('.slider').style.background = `linear-gradient(to right, ${colors[i].join(', ')})`)
     }
 
-    function bind(onComponent, onPalette, onLighting, onFinish) {
+    function bind(onComponent, onPalette, onFinish) {
         rows.forEach(row => {
             let model = row.closest('.model').dataset.model
             let name = row.dataset.name
@@ -49,7 +48,6 @@ const ColorView = (() => {
             number.addEventListener('blur', onFinish)
         })
         palettes.forEach(input => input.addEventListener('input', () => onPalette(input.value)))
-        lighting.addEventListener('change', () => onLighting(lighting.value))
     }
 
     function components() {

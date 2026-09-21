@@ -1,47 +1,19 @@
 const ColorModel = (() => {
-    const whitePoints = {
-        D65: [0.3127, 0.3290],
-        D50: [0.3457, 0.3585],
-        E: [1 / 3, 1 / 3]
-    }
-    const primaries = [[0.64, 0.33], [0.30, 0.60], [0.15, 0.06]]
+    // Матрицы sRGB (D65/2°) с коэффициентами как на easyrgb.com/en/math.php
+    const toXyz = [
+        [0.4124, 0.3576, 0.1805],
+        [0.2126, 0.7152, 0.0722],
+        [0.0193, 0.1192, 0.9505]
+    ]
+    const toRgb = [
+        [3.2406, -1.5372, -0.4986],
+        [-0.9689, 1.8758, 0.0415],
+        [0.0557, -0.2040, 1.0570]
+    ]
     const clamp = (value, min, max) => Math.min(max, Math.max(min, value))
 
     function multiply(matrix, vector) {
         return matrix.map(row => row.reduce((sum, value, i) => sum + value * vector[i], 0))
-    }
-
-    function inverse(matrix) {
-        let rows = matrix.map((row, i) => [...row, ...[0, 1, 2].map(j => i === j ? 1 : 0)])
-        for (let i = 0; i < 3; i++) {
-            let pivot = i
-            for (let j = i + 1; j < 3; j++) {
-                if (Math.abs(rows[j][i]) > Math.abs(rows[pivot][i])) pivot = j
-            }
-            if (Math.abs(rows[pivot][i]) < 1e-12) throw new Error('Матрица необратима')
-            let saved = rows[i]
-            rows[i] = rows[pivot]
-            rows[pivot] = saved
-            let divisor = rows[i][i]
-            rows[i] = rows[i].map(value => value / divisor)
-            for (let j = 0; j < 3; j++) {
-                if (j === i) continue
-                let factor = rows[j][i]
-                rows[j] = rows[j].map((value, k) => value - factor * rows[i][k])
-            }
-        }
-        return rows.map(row => row.slice(3))
-    }
-
-    function createMatrices(standard) {
-        if (!Object.hasOwn(whitePoints, standard)) throw new Error('Неизвестный стандарт освещения')
-        let [x, y] = whitePoints[standard]
-        let white = [x / y, 1, (1 - x - y) / y]
-        let columns = primaries.map(([x, y]) => [x / y, 1, (1 - x - y) / y])
-        let base = [0, 1, 2].map(i => columns.map(column => column[i]))
-        let scale = multiply(inverse(base), white)
-        let toXyz = base.map(row => row.map((value, i) => value * scale[i]))
-        return {toXyz, toRgb: inverse(toXyz), white}
     }
 
     function linear(value) {
@@ -52,15 +24,17 @@ const ColorModel = (() => {
         return value <= 0.0031308 ? value * 12.92 : 1.055 * value ** (1 / 2.4) - 0.055
     }
 
-    function rgbToXyz(rgb, matrices) {
-        let values = multiply(matrices.toXyz, [rgb.r, rgb.g, rgb.b].map(value => linear(value / 255)))
+    function rgbToXyz(rgb) {
+        let values = multiply(toXyz, [rgb.r, rgb.g, rgb.b].map(value => linear(value / 255)))
         return {x: values[0] * 100, y: values[1] * 100, z: values[2] * 100}
     }
 
-    function xyzToRgb(xyz, matrices) {
-        let values = multiply(matrices.toRgb, [xyz.x / 100, xyz.y / 100, xyz.z / 100])
-        let clipped = values.some(value => value < -1e-9 || value > 1 + 1e-9)
-        values = values.map(value => gamma(clamp(value, 0, 1)) * 255)
+    function xyzToRgb(xyz) {
+        let values = multiply(toRgb, [xyz.x / 100, xyz.y / 100, xyz.z / 100])
+            .map(value => gamma(value) * 255)
+        // выход за границы больше, чем на погрешность округления до целого
+        let clipped = values.some(value => value < -0.5 || value > 255.5)
+        values = values.map(value => clamp(value, 0, 255))
         return {rgb: {r: values[0], g: values[1], b: values[2]}, clipped}
     }
 
@@ -107,7 +81,7 @@ const ColorModel = (() => {
         return {r: parseInt(hex.slice(1, 3), 16), g: parseInt(hex.slice(3, 5), 16), b: parseInt(hex.slice(5, 7), 16)}
     }
 
-    return {clamp, multiply, inverse, createMatrices, linear, gamma, rgbToXyz, xyzToRgb, rgbToHsv, hsvToRgb, rgbToHex, hexToRgb}
+    return {clamp, multiply, linear, gamma, rgbToXyz, xyzToRgb, rgbToHsv, hsvToRgb, rgbToHex, hexToRgb}
 })()
 
 if (typeof module !== 'undefined') module.exports = ColorModel

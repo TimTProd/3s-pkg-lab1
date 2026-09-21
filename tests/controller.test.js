@@ -23,19 +23,6 @@ function setup() {
     return result
 }
 
-test('lighting changes XYZ and gradients while preserving RGB', () => {
-    let app = setup()
-    let rgb = {...app.state.rgb}
-    let xyz = {...app.state.xyz}
-    let hex = app.hex
-    let gradient = app.colors[3].join(',')
-    app.callbacks[2]('D50')
-    assert.notDeepEqual({...app.state.xyz}, xyz)
-    assert.deepEqual({...app.state.rgb}, rgb)
-    assert.equal(app.hex, hex)
-    assert.notEqual(app.colors[3].join(','), gradient)
-})
-
 test('RGB edits update other models and neighboring gradients', () => {
     let app = setup()
     let gradient = app.colors[1].join(',')
@@ -55,7 +42,7 @@ test('source HSV stays precise and active input is preserved', () => {
     assert.equal(app.state.hsv.h, 212.34)
     assert.equal(app.state.hsv.s, 61.23)
     assert.equal(app.active, active)
-    app.callbacks[3]()
+    app.callbacks[2]()
     assert.equal(app.active, null)
 })
 

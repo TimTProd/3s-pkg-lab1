@@ -1,4 +1,3 @@
-let matrices = ColorModel.createMatrices('D65')
 let state = {rgb: {r: 79, g: 134, b: 198}}
 let message = ''
 const components = ColorView.components()
@@ -10,7 +9,7 @@ function refresh(activeInput = null) {
         for (let i = 0; i <= 30; i++) {
             let values = {...state[model], [name]: min + (max - min) * i / 30}
             let rgb = values
-            if (model === 'xyz') rgb = ColorModel.xyzToRgb(values, matrices).rgb
+            if (model === 'xyz') rgb = ColorModel.xyzToRgb(values).rgb
             if (model === 'hsv') rgb = ColorModel.hsvToRgb(values)
             stops.push(ColorModel.rgbToHex(rgb))
         }
@@ -20,7 +19,7 @@ function refresh(activeInput = null) {
 }
 
 function setColor(rgb, source = 'rgb', values = rgb, activeInput = null) {
-    state = {rgb, xyz: ColorModel.rgbToXyz(rgb, matrices), hsv: ColorModel.rgbToHsv(rgb)}
+    state = {rgb, xyz: ColorModel.rgbToXyz(rgb), hsv: ColorModel.rgbToHsv(rgb)}
     state[source] = values
     refresh(activeInput)
 }
@@ -33,7 +32,7 @@ function changeComponent(model, name, value, min, max, activeInput) {
     let rgb = values
     if (model === 'hsv') rgb = ColorModel.hsvToRgb(values)
     if (model === 'xyz') {
-        let result = ColorModel.xyzToRgb(values, matrices)
+        let result = ColorModel.xyzToRgb(values)
         rgb = result.rgb
         if (result.clipped) message = 'Цвет вне гаммы RGB. Применено обрезание (Clipping).'
     }
@@ -43,10 +42,6 @@ function changeComponent(model, name, value, min, max, activeInput) {
 ColorView.bind(changeComponent, hex => {
     message = ''
     setColor(ColorModel.hexToRgb(hex))
-}, standard => {
-    matrices = ColorModel.createMatrices(standard)
-    message = ''
-    setColor(state.rgb)
 }, () => refresh())
 
 setColor(state.rgb)
